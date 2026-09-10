@@ -1,0 +1,21 @@
+{
+  "name": "svoim-golosom-pri-kom",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/prepare-fonts.mjs && node scripts/serve.mjs",
+    "preview": "node scripts/serve.mjs dist",
+    "verify": "npm test && npm run build && npm run check:integration",
+    "check:integration": "node scripts/check-integration.mjs",
+    "build:sites": "npm run build && node scripts/prepare-sites.mjs"
+  },
+  "dependencies": {
+    "@fontsource/geologica": "5.3.0"
+  }
+}

@@ -1,0 +1,12 @@
+dist/
+node_modules/
+output/
+.env*
+!.env.example
+*.ttf
+*.otf
+*.TTF
+*.OTF
+assets/fonts/geologica-*.woff2
+assets/fonts/Geologica-LICENSE.txt
+dist-sites/
