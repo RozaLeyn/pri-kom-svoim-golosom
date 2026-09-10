@@ -9,4 +9,4 @@ output/
 *.OTF
 assets/fonts/geologica-*.woff2
 assets/fonts/Geologica-LICENSE.txt
-dist-sites/
+out/
