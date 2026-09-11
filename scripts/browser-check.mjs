@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {questions} from '../src/data.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,channel:process.env.PLAYWRIGHT_CHANNEL||undefined});
 await mkdir('output',{recursive:true});
 try{
  for(const width of [320,390,1280]){
@@ -12,10 +12,14 @@ try{
   await page.goto('http://127.0.0.1:4178/games/pri-kom/');await page.evaluate(()=>document.fonts.ready);
   await page.evaluate(()=>{localStorage.setItem('merkazim_integration_probe','untouched');sessionStorage.setItem('other_game_probe','untouched');});
   async function activate(locator){if(width!==320){await locator.click();return;}for(let n=0;n<100;n++){if(await locator.evaluate(el=>el===document.activeElement)){await page.keyboard.press('Enter');return;}await page.keyboard.press('Tab');}throw new Error('Control unreachable by Tab');}
-  const contrast=await page.evaluate(()=>{const lum=h=>h.match(/\w\w/g).map(x=>{const v=parseInt(x,16)/255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);return (lum('F0EADC')+.05)/(lum('0B7074')+.05);});assert.ok(contrast>=4.5);
   assert.equal(await page.locator('#brand').getAttribute('href'),'https://svoimgolosom.co.il/');assert.equal(await page.locator('#registration').getAttribute('href'),'https://svoimgolosom.co.il/qmYm#join');
+  assert.equal(await page.locator('#game-status').getAttribute('hidden'),'');
+  const brandMetrics=await page.evaluate(()=>{const header=document.querySelector('.header').getBoundingClientRect(),main=document.querySelector('main').getBoundingClientRect(),logo=document.querySelector('.brand img'),registration=document.querySelector('#registration');return {aligned:header.left===main.left&&header.width===main.width,logoWidth:logo.getBoundingClientRect().width,blend:getComputedStyle(logo).mixBlendMode,radius:getComputedStyle(logo).borderRadius,registrationFont:parseFloat(getComputedStyle(registration.closest('.registration')).fontSize),registrationHeight:registration.getBoundingClientRect().height,registrationColor:getComputedStyle(registration.querySelector('strong')).color};});
+  assert.equal(brandMetrics.aligned,true);assert.equal(brandMetrics.logoWidth,width<=480?120:156);assert.equal(brandMetrics.blend,'normal');assert.equal(brandMetrics.radius,'0px');assert.ok(brandMetrics.registrationFont>=14);assert.ok(brandMetrics.registrationHeight>=44);assert.equal(brandMetrics.registrationColor,'rgb(15, 119, 123)');
   await activate(page.locator('#privacy'));assert.equal(await page.locator('dialog').evaluate(d=>d.open),true);await page.keyboard.press('Escape');
   await activate(page.locator('#start'));
+  assert.equal(await page.locator('.game-status-row strong').innerText(),'При ком?');assert.equal(await page.locator('.game-status-row span').innerText(),'1 из 8');assert.equal(await page.locator('.progress').evaluate(e=>getComputedStyle(e).height),'3px');assert.equal(await page.locator('.progress>span').count(),8);
+  const headerSpacing=await page.evaluate(()=>({brandToStatus:document.querySelector('.game-status').getBoundingClientRect().top-document.querySelector('.brand-row').getBoundingClientRect().bottom,labelToProgress:document.querySelector('.progress').getBoundingClientRect().top-document.querySelector('.game-status-row').getBoundingClientRect().bottom,progressToGame:document.querySelector('main').getBoundingClientRect().top-document.querySelector('.progress').getBoundingClientRect().bottom}));assert.ok(headerSpacing.brandToStatus>=20&&headerSpacing.brandToStatus<=24);assert.equal(headerSpacing.labelToProgress,8);assert.ok(headerSpacing.progressToGame>=20&&headerSpacing.progressToGame<=24);
   const ids=[];let correct=0;
   for(let i=0;i<8;i++){
    const text=await page.locator('h1').innerText(),q=questions.find(q=>q.question===text);assert.ok(q);ids.push(q.id);
@@ -23,11 +27,13 @@ try{
    if(i===0){await activate(page.locator('#hint'));assert.equal(await page.locator('.option:disabled').count(),2);}
    const right=width!==320||i%2===0;let button=right?page.getByRole('button',{name:q.correct,exact:false}):page.locator('.option:not(:disabled)').filter({hasNotText:q.correct}).first();if(right)correct++;
    await activate(button);await page.locator('.story-card').waitFor();await activate(page.locator('.story details summary'));assert.equal(await page.locator('.sources a').count(),q.sources.length);
+   assert.equal(await page.locator('.progress>span').nth(i).getAttribute('class'),right?'correct':'incorrect');
    assert.equal(await page.locator('.answer-heading h1').innerText(),q.correct);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    if(i===0&&width===390){await page.screenshot({path:'output/story-mobile.png',fullPage:true});}
    await activate(page.locator('#next'));
   }
   assert.equal(new Set(ids).size,8);assert.equal(await page.locator('.result h1').innerText(),`${correct} из 8`);assert.equal(await page.locator('.timeline-item').count(),8);
+  assert.equal(await page.locator('.game-status-row strong').innerText(),'При ком?');assert.equal(await page.locator('.game-status-row span').innerText(),'результат');assert.equal(await page.locator('.progress').count(),0);
   const years=await page.locator('.timeline-year').allTextContents();assert.deepEqual(years,[...years].sort());
   await activate(page.locator('.timeline-item summary').first());if(width===390)await page.screenshot({path:'output/result-mobile.png',fullPage:true});
   assert.deepEqual(await page.evaluate(()=>({local:localStorage.getItem('merkazim_integration_probe'),localCount:localStorage.length,session:sessionStorage.getItem('other_game_probe'),sessionCount:sessionStorage.length,cookie:document.cookie})),{local:'untouched',localCount:1,session:'untouched',sessionCount:1,cookie:''});
