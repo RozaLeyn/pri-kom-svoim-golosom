@@ -19,3 +19,8 @@ test('static entry has local modules and no inline scripts or handlers',async()=
 test('runtime does not store, track or transmit answers',async()=>{
  for(const f of ['app.js','core.js','config.js']){const code=await readFile(new URL(`../src/${f}`,import.meta.url),'utf8');assert.ok(!/localStorage|sessionStorage|document\.cookie|\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|eval\s*\(/.test(code));}
 });
+
+test('start screen omits the removed introductory phrase',async()=>{
+ const code=await readFile(new URL('../src/app.js',import.meta.url),'utf8');
+ assert.ok(!code.includes('история умеет удивлять'));
+});
