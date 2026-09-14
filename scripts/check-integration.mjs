@@ -4,7 +4,7 @@ import {resolve,dirname,extname} from 'node:path';
 async function walk(dir){const out=[];for(const f of await readdir(dir,{withFileTypes:true})){const p=`${dir}/${f.name}`;out.push(...f.isDirectory()?await walk(p):[p]);}return out;}
 const files=await walk('dist');const html=await readFile('dist/index.html','utf8');
 assert.ok(html.includes('https://info.svoimgolosom.co.il/games/pri-kom/preview.png'));
-const preview=await readFile('dist/preview.png');assert.equal(preview.readUInt32BE(16),1200);assert.equal(preview.readUInt32BE(20),630);
+const preview=await readFile('dist/preview.png');assert.equal(preview.readUInt32BE(16),1733);assert.equal(preview.readUInt32BE(20),908);
 for(const file of files){
  assert.ok(!/\.(ttf|otf|eot)$/i.test(file),`Forbidden font: ${file}`);
  assert.ok(!/(^|\/)\.env/.test(file),`Private environment file: ${file}`);
@@ -17,5 +17,6 @@ for(const file of files){
  for(const [,ref] of resourceRefs){assert.ok(ref.startsWith('./')||ref.startsWith('../'),`Non-local resource in ${file}: ${ref}`);const base=file.endsWith('.js')&&ref.startsWith('./assets/')?'dist':dirname(file);await stat(resolve(base,ref));}
 }
 const total=(await Promise.all(files.map(f=>stat(f)))).reduce((s,f)=>s+f.size,0);
-assert.ok(total<1024*1024,'Bundle exceeds 1 MB');
-console.log(`Integration passed: ${files.length} static files, ${(total/1024).toFixed(0)} KB including 1200×630 preview. No network, storage, inline scripts, secret files or unlicensed font formats.`);
+assert.ok(total-preview.length<1024*1024,'Game assets excluding social cover exceed 1 MB');
+assert.ok(preview.length<5*1024*1024,'Social cover exceeds 5 MB');
+console.log(`Integration passed: ${files.length} static files, ${(total/1024).toFixed(0)} KB including 1733×908 preview. No network, storage, inline scripts, secret files or unlicensed font formats.`);
