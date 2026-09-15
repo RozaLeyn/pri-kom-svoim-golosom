@@ -26,3 +26,42 @@
 .progress .current{border:0;background:rgb(21 56 37/.34)}
 .progress .pending{background:rgb(21 56 37/.16)}
 @media(max-width:480px){.header{padding:18px 20px 0}.brand img{width:120px}.brand-row>.registration{font-size:14px}.game-status-row{font-size:14px}main{margin-top:22px}}
+
+/* Keep navigation in the viewport; scroll the story, not the entire page. */
+body { height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+.header { width:100%; flex:none; padding-top:12px; }
+.game-status { margin-top:10px; }
+main { width:100%; flex:1; min-height:0; margin:12px auto 0; overflow:hidden; }
+footer { width:100%; flex:none; margin:0 auto; padding-top:0; padding-bottom:max(4px,env(safe-area-inset-bottom)); }
+.intro { height:100%; display:flex; flex-direction:column; gap:8px; }
+.intro h1 { font-size:clamp(48px,9vw,78px); }
+.intro .lead { margin:0; font-size:clamp(17px,3vw,22px); }
+.intro-scene { flex:1; min-height:70px; margin:0; }
+.teaser { padding:14px 18px; }
+.teaser p { font-size:15px; margin:8px 0; }
+.character { max-height:100%; width:120px; }
+.intro-bottom { flex:none; margin:0; }
+.meta { margin-bottom:8px; }
+.primary { min-height:48px; padding:12px 20px; font-size:16px; }
+.play { height:100%; min-height:0; display:flex; flex-direction:column; }
+.question-card,.story-card { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; padding:4px 4px 8px; }
+.story-card { padding:16px; }
+.question-card h1 { font-size:clamp(23px,5.5vw,34px); }
+.question-card .eyebrow { margin-bottom:8px; }
+.question-label { margin:12px 0 8px; }
+.options { gap:7px; }
+.option { min-height:48px; padding:10px 14px; }
+.below-card { flex:none; margin-top:4px; }
+.hint-status { min-height:0; }
+.next { flex:none; margin:10px 0 0; }
+.result { height:100%; overflow:auto; padding:4px; }
+@media(max-height:600px) { .teaser>span { font-size:11px; } .teaser p { font-size:14px; } .intro-scene { overflow:hidden; } }
+
+.question-card { display:flex; flex-direction:column; overflow:hidden; }
+.question-reading { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; padding:2px; }
+.question-label,.options { flex:none; }
+.options .option { min-height:48px; }
+.question-label { margin:8px 0 6px; }
+.result { display:flex; flex-direction:column; gap:10px; overflow:hidden; }
+.result-reading { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; }
+.result > .primary { flex:none; margin:0; }
